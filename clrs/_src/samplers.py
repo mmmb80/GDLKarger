@@ -28,7 +28,7 @@ from clrs._src import probing
 from clrs._src import specs
 import jax
 import numpy as np
-
+import networkx as nx
 
 _Array = np.ndarray
 _DataPoint = probing.DataPoint
@@ -280,7 +280,18 @@ def build_sampler(
                           *args, **clean_kwargs)
   return sampler, spec
 
-
+class ConnectedGraphSampler(Sampler):
+    """Generates an E-R random connected graph of a specific size"""
+    def _sample_data(self,
+                     length: int,
+                     p: float,
+                     tries = 100
+                    ):
+        for _ in range(tries):
+            graph = self._random_er_graph(length, p)
+            if nx.is_connected(graph):
+                return graph
+        raise Exception("Tries exceeded, maybe adjust p higher?")
 class SortingSampler(Sampler):
   """Sorting sampler. Generates a random sequence of U[0, 1]."""
 
@@ -632,6 +643,7 @@ class ConvexHullSampler(Sampler):
 
 
 SAMPLERS = {
+    'karger': ConnectedGraphSampler,
     'insertion_sort': SortingSampler,
     'bubble_sort': SortingSampler,
     'heapsort': SortingSampler,

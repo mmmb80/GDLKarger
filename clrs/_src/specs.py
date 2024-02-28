@@ -65,6 +65,7 @@ class OutputClass:
 Spec = Dict[str, Tuple[str, str, str]]
 
 CLRS_30_ALGS = [
+    'karger'
     'articulation_points',
     'activity_selector',
     'bellman_ford',
@@ -113,6 +114,15 @@ for alg in ['quickselect', 'minimum', 'binary_search', 'naive_string_matcher',
 
 
 SPECS = types.MappingProxyType({
+    'karger': {
+        'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
+        'seed': (Stage.INPUT, Location.GRAPH, Type.SCALAR),
+        'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),
+        'adj': (Stage.INPUT, Location.EDGE, Type.MASK),
+        'group': (Stage.OUTPUT, Location.NODE, Type.POINTER),
+        'group_h': (Stage.HINT, Location.NODE, Type.POINTER),
+        'graph_comp': (Stage.HINT, Location.EDGE, Type.SCALAR),
+    },
     'insertion_sort': {
         'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
         'key': (Stage.INPUT, Location.NODE, Type.SCALAR),

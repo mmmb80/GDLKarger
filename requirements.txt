@@ -1,0 +1,10 @@
+chex~=0.1.85
+jax~=0.4.24
+CLRS~=0.0.1
+numpy~=1.26.4
+tensorflow~=2.15.0.post1
+attrs~=23.2.0
+networkx~=3.2.1
+optax~=0.1.9
+requests~=2.31.0
+setuptools~=69.0.3

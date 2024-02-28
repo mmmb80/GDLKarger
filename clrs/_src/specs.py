@@ -65,7 +65,7 @@ class OutputClass:
 Spec = Dict[str, Tuple[str, str, str]]
 
 CLRS_30_ALGS = [
-    'karger'
+    'karger',
     'articulation_points',
     'activity_selector',
     'bellman_ford',

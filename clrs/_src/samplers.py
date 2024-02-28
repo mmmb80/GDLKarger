@@ -95,7 +95,6 @@ class Sampler(abc.ABC):
     self._algorithm = algorithm
     self._args = args
     self._kwargs = kwargs
-
     if num_samples < 0:
       logging.warning('Sampling dataset on-the-fly, unlimited samples.')
       # Just get an initial estimate of max hint length
@@ -193,7 +192,6 @@ class Sampler(abc.ABC):
   def _random_er_graph(self, nb_nodes, p=0.5, directed=False, acyclic=False,
                        weighted=False, low=0.0, high=1.0):
     """Random Erdos-Renyi graph."""
-
     mat = self._rng.binomial(1, p, size=(nb_nodes, nb_nodes))
     if not directed:
       mat *= np.transpose(mat)
@@ -284,13 +282,19 @@ class ConnectedGraphSampler(Sampler):
     """Generates an E-R random connected graph of a specific size"""
     def _sample_data(self,
                      length: int,
-                     p: float,
-                     tries = 100
+                     p: float = 0.3,
+                     tries=100
                     ):
         for _ in range(tries):
-            graph = self._random_er_graph(length, p)
-            if nx.is_connected(graph):
-                return graph
+            graph = self._random_er_graph(
+                nb_nodes=length,
+                p=1,
+                directed=False,
+                acyclic=False,
+                weighted=True,
+                )
+            if nx.is_connected(nx.from_numpy_array(graph)):
+                return [graph, 42]
         raise Exception("Tries exceeded, maybe adjust p higher?")
 class SortingSampler(Sampler):
   """Sorting sampler. Generates a random sequence of U[0, 1]."""

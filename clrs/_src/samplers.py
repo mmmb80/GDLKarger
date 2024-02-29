@@ -18,6 +18,7 @@
 import abc
 import collections
 import inspect
+import random
 import types
 
 from typing import Any, Callable, List, Optional, Tuple
@@ -282,19 +283,19 @@ class ConnectedGraphSampler(Sampler):
     """Generates an E-R random connected graph of a specific size"""
     def _sample_data(self,
                      length: int,
-                     p: float = 0.3,
+                     p: float = 0.5,
                      tries=100
                     ):
         for _ in range(tries):
             graph = self._random_er_graph(
                 nb_nodes=length,
-                p=1,
+                p=0.5,
                 directed=False,
                 acyclic=False,
-                weighted=True,
+                weighted=False,
                 )
             if nx.is_connected(nx.from_numpy_array(graph)):
-                return [graph, 42]
+                return [graph, random.randint(1,10)]
         raise Exception("Tries exceeded, maybe adjust p higher?")
 class SortingSampler(Sampler):
   """Sorting sampler. Generates a random sequence of U[0, 1]."""

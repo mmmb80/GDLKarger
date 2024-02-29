@@ -100,7 +100,7 @@ def karger(A: _Array, Seed: int) -> _Out:
             probes,
             specs.Stage.HINT,
             next_probe={
-                'group_h': np.copy(group),
+                'group_h': np.copy(group) / len(group),
                 'graph_comp': np.copy(graph_comp),
             })
 
@@ -116,7 +116,7 @@ def karger(A: _Array, Seed: int) -> _Out:
         group[group == j] = i
         replace_edges(graph_comp, i, j)
 
-    probing.push(probes, specs.Stage.OUTPUT, next_probe={'group': np.copy(group)})
+    probing.push(probes, specs.Stage.OUTPUT, next_probe={'group': np.copy(group) / np.max(group)})
     probing.finalize(probes)
     return group, probes
 

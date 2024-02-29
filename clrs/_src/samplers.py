@@ -649,6 +649,7 @@ class ConvexHullSampler(Sampler):
 
 SAMPLERS = {
     'karger': ConnectedGraphSampler,
+    'karger_2' : ConnectedGraphSampler,
     'insertion_sort': SortingSampler,
     'bubble_sort': SortingSampler,
     'heapsort': SortingSampler,

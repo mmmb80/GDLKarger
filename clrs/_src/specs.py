@@ -66,6 +66,7 @@ Spec = Dict[str, Tuple[str, str, str]]
 
 CLRS_30_ALGS = [
     'karger',
+    'karger_2',
     'articulation_points',
     'activity_selector',
     'bellman_ford',
@@ -122,6 +123,21 @@ SPECS = types.MappingProxyType({
         'group': (Stage.OUTPUT, Location.NODE, Type.POINTER),
         'group_h': (Stage.HINT, Location.NODE, Type.POINTER),
         'graph_comp': (Stage.HINT, Location.EDGE, Type.SCALAR),
+    },
+    'karger_2' : {
+        'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
+        'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),
+        'adj': (Stage.INPUT, Location.EDGE, Type.MASK),
+        'in_mst': (Stage.OUTPUT, Location.EDGE, Type.MASK),
+        'in_mst_h': (Stage.HINT, Location.EDGE, Type.MASK),
+        'pi': (Stage.HINT, Location.NODE, Type.POINTER),
+        'u': (Stage.HINT, Location.NODE, Type.MASK_ONE),
+        'v': (Stage.HINT, Location.NODE, Type.MASK_ONE),
+        'root_u': (Stage.HINT, Location.NODE, Type.MASK_ONE),
+        'root_v': (Stage.HINT, Location.NODE, Type.MASK_ONE),
+        'mask_u': (Stage.HINT, Location.NODE, Type.MASK),
+        'mask_v': (Stage.HINT, Location.NODE, Type.MASK),
+        'phase': (Stage.HINT, Location.GRAPH, Type.CATEGORICAL)
     },
     'insertion_sort': {
         'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),

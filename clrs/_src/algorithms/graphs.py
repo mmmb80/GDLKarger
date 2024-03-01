@@ -51,6 +51,7 @@ _OutputClass = specs.OutputClass
 
 def sample_indices_with_weights(A):
     if np.sum(A) == 0:
+        breakpoint()
         return -1, -1
     A_normalized = A / np.sum(A)
 
@@ -100,13 +101,14 @@ def karger(A: _Array, Seed: int) -> _Out:
             probes,
             specs.Stage.HINT,
             next_probe={
-                'group_h': np.copy(group) / len(group),
+                'group_h': np.copy(group),
                 'graph_comp': np.copy(graph_comp),
             })
 
         i, j = sample_indices_with_weights(graph_comp)
-        if i == -1:
-            continue
+        assert (i != j)
+        assert(i != -1)
+
         i = group[i]
         j = group[j]
         if A_pos[i] > A_pos[j]:
@@ -116,7 +118,7 @@ def karger(A: _Array, Seed: int) -> _Out:
         group[group == j] = i
         replace_edges(graph_comp, i, j)
 
-    probing.push(probes, specs.Stage.OUTPUT, next_probe={'group': np.copy(group) / np.max(group)})
+    probing.push(probes, specs.Stage.OUTPUT, next_probe={'group': np.copy(group)})
     probing.finalize(probes)
     return group, probes
 

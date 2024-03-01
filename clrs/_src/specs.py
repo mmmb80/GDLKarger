@@ -124,7 +124,7 @@ SPECS = types.MappingProxyType({
         'group_h': (Stage.HINT, Location.NODE, Type.POINTER),
         'graph_comp': (Stage.HINT, Location.EDGE, Type.SCALAR),
     },
-    'karger_2' : {
+    'karger_2': {
         'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
         'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),
         'adj': (Stage.INPUT, Location.EDGE, Type.MASK),

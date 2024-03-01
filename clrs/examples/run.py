@@ -30,7 +30,7 @@ import requests
 import tensorflow as tf
 
 
-flags.DEFINE_list('algorithms', ['bfs'], 'Which algorithms to run.')
+flags.DEFINE_list('algorithms', ['karger'], 'Which algorithms to run.')
 flags.DEFINE_list('train_lengths', ['4', '7', '11', '13', '16'],
                   'Which training sizes to use. A size of -1 means '
                   'use the benchmark dataset.')
@@ -434,7 +434,6 @@ def main(unused_argv):
 
   while step < FLAGS.train_steps:
     feedback_list = [next(t) for t in train_samplers]
-
     # Initialize model.
     if step == 0:
       all_features = [f.features for f in feedback_list]

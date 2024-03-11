@@ -207,7 +207,7 @@ class Sampler(abc.ABC):
             mat = mat.astype(float) * weights
         return mat
 
-    def _random_cut_graph(self, nb_nodes, p_high=0.9, p_low=0.2):
+    def _random_cut_graph(self, nb_nodes, p_high=0.9, p_low=0.1):
         adjacency_matrix = np.zeros((nb_nodes, nb_nodes))
         partition = self._rng.choice([0, 1], size=nb_nodes)
         for i in range(nb_nodes):
@@ -292,7 +292,7 @@ def build_sampler(
     return sampler, spec
 
 
-class ConnectedGraphSampler(Sampler):
+class ConnectedGraphSamplerWithSeed(Sampler):
     """Generates an E-R random connected graph of a specific size"""
 
     def _sample_data(self,
@@ -308,6 +308,25 @@ class ConnectedGraphSampler(Sampler):
                 np.fill_diagonal(graph, 0)
                 assert (graph[0, 0] == 0)
                 return [graph, random.randint(1, 10)]
+        raise Exception("Tries exceeded, maybe adjust p higher?")
+
+
+class ConnectedGraphSampler(Sampler):
+    """Generates an E-R random connected graph of a specific size"""
+
+    def _sample_data(self,
+                     length: int,
+                     p: float = 0.5,
+                     tries=100
+                     ):
+        for _ in range(tries):
+            graph = self._random_cut_graph(
+                nb_nodes=length,
+            )
+            if nx.is_connected(nx.from_numpy_array(graph)):
+                np.fill_diagonal(graph, 0)
+                assert (graph[0, 0] == 0)
+                return [graph]
         raise Exception("Tries exceeded, maybe adjust p higher?")
 
 
@@ -662,8 +681,9 @@ class ConvexHullSampler(Sampler):
 
 
 SAMPLERS = {
-    'karger': ConnectedGraphSampler,
-    'karger_2': ConnectedGraphSampler,
+    'karger': ConnectedGraphSamplerWithSeed,
+    'karger_deterministic': ConnectedGraphSampler,
+    'karger_kruskal': ConnectedGraphSamplerWithSeed,
     'insertion_sort': SortingSampler,
     'bubble_sort': SortingSampler,
     'heapsort': SortingSampler,

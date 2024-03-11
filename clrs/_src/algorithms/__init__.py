@@ -31,6 +31,7 @@ from clrs._src.algorithms.geometry import jarvis_march
 from clrs._src.algorithms.kargers import karger
 from clrs._src.algorithms.kargers import karger_deterministic
 from clrs._src.algorithms.kargers import karger_kruskal_naive
+from clrs._src.algorithms.kargers import karger_prim
 from clrs._src.algorithms.kargers import karger_kruskal
 from clrs._src.algorithms.graphs import dfs
 from clrs._src.algorithms.graphs import bfs

@@ -326,7 +326,8 @@ class ConnectedGraphSamplerWithRandomWeights(Sampler):
             if nx.is_connected(nx.from_numpy_array(graph)):
                 np.fill_diagonal(graph, 0)
                 assert (graph[0, 0] == 0)
-                return [graph, self._rng.rand(length, length)]
+                rand_matrix = self._rng.rand(length, length)
+                return [graph, (rand_matrix + rand_matrix.T)/2]
         raise Exception("Tries exceeded, maybe adjust p higher?")
 
 
@@ -704,6 +705,7 @@ SAMPLERS = {
     'karger_deterministic': ConnectedGraphSampler,
     'karger_kruskal': ConnectedGraphSamplerWithSeed,
     'karger_kruskal_naive': ConnectedGraphSamplerWithRandomWeights,
+    'karger_prim': ConnectedGraphSamplerWithRandomWeights,
     'insertion_sort': SortingSampler,
     'bubble_sort': SortingSampler,
     'heapsort': SortingSampler,

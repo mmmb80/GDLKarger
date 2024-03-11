@@ -55,21 +55,6 @@ def replace_edges(adj_matrix, i, j):
     return adj_matrix
 
 
-def replace_edges(adj_matrix, i, j):
-    adj_matrix[i, :] += adj_matrix[j, :]
-    adj_matrix[:, i] += adj_matrix[:, j]
-
-    adj_matrix[j, :] = 0
-    adj_matrix[:, j] = 0
-
-    adj_matrix[i, j] = 0
-    adj_matrix[j, i] = 0
-    adj_matrix[i, i] = 0
-    adj_matrix[j, j] = 0
-
-    return adj_matrix
-
-
 def replace_edges_max(adj_matrix, i, j):
     adj_matrix[i, :] = np.maximum(adj_matrix[i, :], adj_matrix[j, :])
     adj_matrix[:, i] = np.maximum(adj_matrix[:, i], adj_matrix[:, j])
@@ -175,6 +160,7 @@ def karger_kruskal(A: _Array, Seed: int) -> _Out:
 
     chex.assert_rank(A, 2)
     probes = probing.initialize(specs.SPECS['karger_kruskal'])
+    components = A.shape[0] - 2
 
     A_pos = np.arange(A.shape[0])
     random.seed(Seed)
@@ -186,17 +172,20 @@ def karger_kruskal(A: _Array, Seed: int) -> _Out:
         next_probe={
             'pos': np.copy(A_pos) * 1.0 / A.shape[0],
             'A': np.copy(A),
-            'adj': probing.graph(np.copy(A))
+            'adj': probing.graph(np.copy(A)),
+            'components': probing.mask_one(components, A.shape[0]),
+            'zero': probing.mask_one(0, A.shape[0])
         })
 
     pi = np.arange(A.shape[0])
+    pi_prev = np.copy(pi)
 
-    def mst_union(u, v, in_mst, probes):
+    def mst_union(u, v, n, probes, components):
         root_u = u
         root_v = v
 
-        mask_u = np.zeros(in_mst.shape[0])
-        mask_v = np.zeros(in_mst.shape[0])
+        mask_u = np.zeros(n)
+        mask_v = np.zeros(n)
 
         mask_u[u] = 1
         mask_v[v] = 1
@@ -205,15 +194,17 @@ def karger_kruskal(A: _Array, Seed: int) -> _Out:
             probes,
             specs.Stage.HINT,
             next_probe={
-                'in_mst_h': np.copy(in_mst),
                 'pi': np.copy(pi),
+                'pi': np.copy(pi_prev),
                 'u': probing.mask_one(u, A.shape[0]),
                 'v': probing.mask_one(v, A.shape[0]),
                 'root_u': probing.mask_one(root_u, A.shape[0]),
                 'root_v': probing.mask_one(root_v, A.shape[0]),
                 'mask_u': np.copy(mask_u),
                 'mask_v': np.copy(mask_v),
-                'phase': probing.mask_one(1, 3)
+                'phase': probing.mask_one(1, 3),
+                'components_h': probing.mask_one(components, A.shape[0]),
+                'zero_h': probing.mask_one(0, A.shape[0])
             })
 
         while pi[root_u] != root_u:
@@ -226,15 +217,17 @@ def karger_kruskal(A: _Array, Seed: int) -> _Out:
                 probes,
                 specs.Stage.HINT,
                 next_probe={
-                    'in_mst_h': np.copy(in_mst),
                     'pi': np.copy(pi),
+                    'pi_prev': np.copy(pi_prev),
                     'u': probing.mask_one(u, A.shape[0]),
                     'v': probing.mask_one(v, A.shape[0]),
                     'root_u': probing.mask_one(root_u, A.shape[0]),
                     'root_v': probing.mask_one(root_v, A.shape[0]),
                     'mask_u': np.copy(mask_u),
                     'mask_v': np.copy(mask_v),
-                    'phase': probing.mask_one(1, 3)
+                    'phase': probing.mask_one(1, 3),
+                    'components_h': probing.mask_one(components, A.shape[0]),
+                    'zero_h': probing.mask_one(0, A.shape[0])
                 })
 
         while pi[root_v] != root_v:
@@ -247,7 +240,6 @@ def karger_kruskal(A: _Array, Seed: int) -> _Out:
                 probes,
                 specs.Stage.HINT,
                 next_probe={
-                    'in_mst_h': np.copy(in_mst),
                     'pi': np.copy(pi),
                     'u': probing.mask_one(u, A.shape[0]),
                     'v': probing.mask_one(v, A.shape[0]),
@@ -255,22 +247,24 @@ def karger_kruskal(A: _Array, Seed: int) -> _Out:
                     'root_v': probing.mask_one(root_v, A.shape[0]),
                     'mask_u': np.copy(mask_u),
                     'mask_v': np.copy(mask_v),
-                    'phase': probing.mask_one(2, 3)
+                    'phase': probing.mask_one(2, 3),
+                    'components_h': probing.mask_one(components, A.shape[0]),
+                    'zero_h': probing.mask_one(0, A.shape[0])
                 })
-
-        if root_u < root_v:
-            in_mst[u, v] = 1
-            in_mst[v, u] = 1
+        success_ret = True
+        if root_u > root_v and components > 0:
             pi[root_u] = root_v
-        elif root_u > root_v:
-            in_mst[u, v] = 1
-            in_mst[v, u] = 1
+            components -= 1
+        elif root_u < root_v and components > 0:
             pi[root_v] = root_u
+            components -= 1
+        else:
+            success_ret = False
+
         probing.push(
             probes,
             specs.Stage.HINT,
             next_probe={
-                'in_mst_h': np.copy(in_mst),
                 'pi': np.copy(pi),
                 'u': probing.mask_one(u, A.shape[0]),
                 'v': probing.mask_one(v, A.shape[0]),
@@ -278,10 +272,11 @@ def karger_kruskal(A: _Array, Seed: int) -> _Out:
                 'root_v': probing.mask_one(root_v, A.shape[0]),
                 'mask_u': np.copy(mask_u),
                 'mask_v': np.copy(mask_v),
-                'phase': probing.mask_one(0, 3)
+                'phase': probing.mask_one(0, 3),
+                'components_h': probing.mask_one(components, A.shape[0]),
+                'zero_h': probing.mask_one(0, A.shape[0])
             })
-
-    in_mst = np.zeros((A.shape[0], A.shape[0]))
+        return success_ret
 
     # Prep to sort edge array
     lx = []
@@ -306,7 +301,6 @@ def karger_kruskal(A: _Array, Seed: int) -> _Out:
         probes,
         specs.Stage.HINT,
         next_probe={
-            'in_mst_h': np.copy(in_mst),
             'pi': np.copy(pi),
             'u': probing.mask_one(0, A.shape[0]),
             'v': probing.mask_one(0, A.shape[0]),
@@ -314,21 +308,25 @@ def karger_kruskal(A: _Array, Seed: int) -> _Out:
             'root_v': probing.mask_one(0, A.shape[0]),
             'mask_u': np.zeros(A.shape[0]),
             'mask_v': np.zeros(A.shape[0]),
-            'phase': probing.mask_one(0, 3)
+            'phase': probing.mask_one(0, 3),
+            'components_h': probing.mask_one(components, A.shape[0]),
+            'zero_h': probing.mask_one(0, A.shape[0])
         })
     for ind in np.argsort(wts):
         u = lx[ind]
         v = ly[ind]
-        mst_union(u, v, in_mst, probes)
+        success = mst_union(u, v, A.shape[0], probes, components)
+        if success: components -= 1
 
     probing.push(
         probes,
         specs.Stage.OUTPUT,
-        next_probe={'in_mst': np.copy(in_mst)},
+        next_probe={
+            'pi_final': np.copy(pi),
+        },
     )
     probing.finalize(probes)
-
-    return in_mst, probes
+    return pi, probes
 
 
 def karger_kruskal_naive(A: _Array, random_weights: _Array) -> _Out:
@@ -395,3 +393,115 @@ def karger_kruskal_naive(A: _Array, random_weights: _Array) -> _Out:
     probing.push(probes, specs.Stage.OUTPUT, next_probe={'group': np.copy(group)})
     probing.finalize(probes)
     return group, probes
+
+
+def karger_prim(A: _Array, random_weights: _Array, s: int = 0) -> _Out:
+    """Karger's implementation based on Prim's minimum spanning tree algorithm (Prim, 1957)."""
+
+    chex.assert_rank(A, 2)
+    probes = probing.initialize(specs.SPECS['karger_prim'])
+
+    A_pos = np.arange(A.shape[0])
+
+    probing.push(
+        probes,
+        specs.Stage.INPUT,
+        next_probe={
+            'pos': np.copy(A_pos) * 1.0 / A.shape[0],
+            's': probing.mask_one(s, A.shape[0]),
+            'A': np.copy(A),
+            'adj': probing.graph(np.copy(A)),
+            'random_weights': np.copy(random_weights)
+        })
+    A = np.multiply(A, random_weights)
+    key = np.zeros(A.shape[0])
+    mark = np.zeros(A.shape[0])
+    in_queue = np.zeros(A.shape[0])
+    group = np.arange(A.shape[0])
+    key[s] = 0
+    group_rep = 0
+    in_queue[s] = 1
+    max_edge = 0
+    probing.push(
+        probes,
+        specs.Stage.HINT,
+        next_probe={
+            'group_h': np.copy(group),
+            'key': np.copy(key),
+            'mark': np.copy(mark),
+            'in_queue': np.copy(in_queue),
+            'u': probing.mask_one(s, A.shape[0]),
+            'phase': probing.mask_one(0, 3),
+            'max_edge': max_edge,
+            'group_rep': probing.mask_one(group_rep, A.shape[0])
+        })
+
+    for _ in range(A.shape[0]):
+        u = np.argsort(key + (1.0 - in_queue) * 1e9)[0]  # drop-in for extract-min
+        phase = 1
+        if key[u] > max_edge:
+            phase = 2
+            max_edge = key[u]
+        if in_queue[u] == 0:
+            break
+        mark[u] = 1
+        in_queue[u] = 0
+        probing.push(
+            probes,
+            specs.Stage.HINT,
+            next_probe={
+                'group_h': np.copy(group),
+                'key': np.copy(key),
+                'mark': np.copy(mark),
+                'in_queue': np.copy(in_queue),
+                'u': probing.mask_one(u, A.shape[0]),
+                'phase': probing.mask_one(phase, 3),
+                'max_edge': max_edge,
+                'group_rep': probing.mask_one(group_rep, A.shape[0])
+            })
+        if phase == 2:
+            group[u] = u
+        for v in range(A.shape[0]):
+            if A[u, v] >= 1e-9:
+                if mark[v] == 0 and (in_queue[v] == 0 or A[u, v] < key[v]):
+                    group[v] = group[u]
+                    key[v] = A[u, v]
+                    in_queue[v] = 1
+            if group[v] == group_rep and phase == 2:
+                group[v] = group[s]
+        if phase == 2:
+            group_rep = u
+        probing.push(
+            probes,
+            specs.Stage.HINT,
+            next_probe={
+                'group_h': np.copy(group),
+                'key': np.copy(key),
+                'mark': np.copy(mark),
+                'in_queue': np.copy(in_queue),
+                'u': probing.mask_one(u, A.shape[0]),
+                'phase': probing.mask_one(0, 3),
+                'max_edge': max_edge,
+                'group_rep': probing.mask_one(group_rep, A.shape[0])
+            })
+
+    probing.push(probes, specs.Stage.OUTPUT, next_probe={'group': np.copy(group)})
+    probing.finalize(probes)
+
+    return group, probes
+
+
+if __name__ == '__main__':
+
+    disjoint_union = np.zeros((9, 9))
+    for i in range(9):
+        for j in range(9):
+            if i != j and (i >= 5) == (j >= 5):
+                disjoint_union[i, j] = 1
+
+    adj_matrix = disjoint_union
+    adj_matrix[2, 6] = adj_matrix[6, 2] = 1
+    rand_matrix = np.random.rand(9, 9)
+    weights = (rand_matrix + rand_matrix.T) / 2
+    print(np.multiply(adj_matrix, weights))
+    print(karger_prim(adj_matrix, weights))

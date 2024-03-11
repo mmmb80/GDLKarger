@@ -34,9 +34,45 @@ def sample_lexicographically_smallest(A):
     return sorted_indices[0]
 
 
+def sample_indices_of_largest_element(A):
+    max_index = np.argmax(A)
+    i, j = np.unravel_index(max_index, A.shape)
+    return i, j
+
+
 def replace_edges(adj_matrix, i, j):
     adj_matrix[i, :] += adj_matrix[j, :]
     adj_matrix[:, i] += adj_matrix[:, j]
+
+    adj_matrix[j, :] = 0
+    adj_matrix[:, j] = 0
+
+    adj_matrix[i, j] = 0
+    adj_matrix[j, i] = 0
+    adj_matrix[i, i] = 0
+    adj_matrix[j, j] = 0
+
+    return adj_matrix
+
+
+def replace_edges(adj_matrix, i, j):
+    adj_matrix[i, :] += adj_matrix[j, :]
+    adj_matrix[:, i] += adj_matrix[:, j]
+
+    adj_matrix[j, :] = 0
+    adj_matrix[:, j] = 0
+
+    adj_matrix[i, j] = 0
+    adj_matrix[j, i] = 0
+    adj_matrix[i, i] = 0
+    adj_matrix[j, j] = 0
+
+    return adj_matrix
+
+
+def replace_edges_max(adj_matrix, i, j):
+    adj_matrix[i, :] = np.maximum(adj_matrix[i, :], adj_matrix[j, :])
+    adj_matrix[:, i] = np.maximum(adj_matrix[:, i], adj_matrix[:, j])
 
     adj_matrix[j, :] = 0
     adj_matrix[:, j] = 0
@@ -293,3 +329,69 @@ def karger_kruskal(A: _Array, Seed: int) -> _Out:
     probing.finalize(probes)
 
     return in_mst, probes
+
+
+def karger_kruskal_naive(A: _Array, random_weights: _Array) -> _Out:
+    chex.assert_rank(A, 2)
+    chex.assert_rank(random_weights, 2)
+    probes = probing.initialize(specs.SPECS['karger_kruskal_naive'])
+    A_pos = np.arange(A.shape[0])
+    probing.push(
+        probes,
+        specs.Stage.INPUT,
+        next_probe={
+            'pos': np.copy(A_pos) * 1.0 / A.shape[0],
+            'A': np.copy(A),
+            'adj': probing.graph(np.copy(A)),
+            'random_weights': np.copy(random_weights),
+        })
+    n = A.shape[0]
+    group = np.arange(n)
+    graph_comp = np.copy(np.multiply(A, random_weights))
+    probing.push(
+        probes,
+        specs.Stage.HINT,
+        next_probe={
+            'group_h': np.copy(group),
+            'graph_comp': np.copy(graph_comp),
+            'u': probing.mask_one(0, n),
+            'v': probing.mask_one(0, n),
+            'phase': probing.mask_one(0, 3),
+        })
+    for s in range(A.shape[0] - 2):
+
+        i, j = sample_indices_of_largest_element(graph_comp)
+        probing.push(
+            probes,
+            specs.Stage.HINT,
+            next_probe={
+                'group_h': np.copy(group),
+                'graph_comp': np.copy(graph_comp),
+                'u': probing.mask_one(i, n),
+                'v': probing.mask_one(j, n),
+                'phase': probing.mask_one(1, 3),
+            })
+        assert (i != j)
+        assert (i != -1)
+
+        i = group[i]
+        j = group[j]
+        if A_pos[i] > A_pos[j]:
+            tmp = i
+            i = j
+            j = tmp
+        group[group == j] = i
+        replace_edges_max(graph_comp, i, j)
+        probing.push(
+            probes,
+            specs.Stage.HINT,
+            next_probe={
+                'group_h': np.copy(group),
+                'graph_comp': np.copy(graph_comp),
+                'u': probing.mask_one(i, n),
+                'v': probing.mask_one(j, n),
+                'phase': probing.mask_one(2, 3),
+            })
+    probing.push(probes, specs.Stage.OUTPUT, next_probe={'group': np.copy(group)})
+    probing.finalize(probes)
+    return group, probes

@@ -307,7 +307,26 @@ class ConnectedGraphSamplerWithSeed(Sampler):
             if nx.is_connected(nx.from_numpy_array(graph)):
                 np.fill_diagonal(graph, 0)
                 assert (graph[0, 0] == 0)
-                return [graph, random.randint(1, 10)]
+                return [graph, self._rng.randint(1,10)]
+        raise Exception("Tries exceeded, maybe adjust p higher?")
+
+
+class ConnectedGraphSamplerWithRandomWeights(Sampler):
+    """Generates an E-R random connected graph of a specific size"""
+
+    def _sample_data(self,
+                     length: int,
+                     p: float = 0.5,
+                     tries=100
+                     ):
+        for _ in range(tries):
+            graph = self._random_cut_graph(
+                nb_nodes=length,
+            )
+            if nx.is_connected(nx.from_numpy_array(graph)):
+                np.fill_diagonal(graph, 0)
+                assert (graph[0, 0] == 0)
+                return [graph, self._rng.rand(length, length)]
         raise Exception("Tries exceeded, maybe adjust p higher?")
 
 
@@ -684,6 +703,7 @@ SAMPLERS = {
     'karger': ConnectedGraphSamplerWithSeed,
     'karger_deterministic': ConnectedGraphSampler,
     'karger_kruskal': ConnectedGraphSamplerWithSeed,
+    'karger_kruskal_naive': ConnectedGraphSamplerWithRandomWeights,
     'insertion_sort': SortingSampler,
     'bubble_sort': SortingSampler,
     'heapsort': SortingSampler,

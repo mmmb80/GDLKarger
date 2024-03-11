@@ -68,6 +68,7 @@ CLRS_30_ALGS = [
     'karger',
     'karger_deterministic',
     'karger_kruskal',
+    'karger_kruskal_naive',
     'articulation_points',
     'activity_selector',
     'bellman_ford',
@@ -132,6 +133,18 @@ SPECS = types.MappingProxyType({
         'group': (Stage.OUTPUT, Location.NODE, Type.POINTER),
         'group_h': (Stage.HINT, Location.NODE, Type.POINTER),
         'graph_comp': (Stage.HINT, Location.EDGE, Type.SCALAR),
+    },
+    'karger_kruskal_naive': {
+        'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
+        'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),
+        'random_weights': (Stage.INPUT, Location.EDGE, Type.SCALAR),
+        'adj': (Stage.INPUT, Location.EDGE, Type.MASK),
+        'group': (Stage.OUTPUT, Location.NODE, Type.POINTER),
+        'group_h': (Stage.HINT, Location.NODE, Type.POINTER),
+        'graph_comp': (Stage.HINT, Location.EDGE, Type.SCALAR),
+        'phase': (Stage.HINT, Location.GRAPH, Type.CATEGORICAL),
+        'u': (Stage.HINT, Location.NODE, Type.MASK_ONE),
+        'v': (Stage.HINT, Location.NODE, Type.MASK_ONE)
     },
     'karger_kruskal': {
         'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),

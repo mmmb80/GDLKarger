@@ -293,7 +293,6 @@ def build_sampler(
 
 
 class ConnectedGraphSamplerWithSeed(Sampler):
-    """Generates an E-R random connected graph of a specific size"""
 
     def _sample_data(self,
                      length: int,
@@ -302,7 +301,7 @@ class ConnectedGraphSamplerWithSeed(Sampler):
                      ):
         for _ in range(tries):
             graph = self._random_cut_graph(
-                nb_nodes=length, p_high=0.9, p_low=0.9*2 / length
+                nb_nodes=length, p_high=0.9, p_low=0.1 / length
             )
             if nx.is_connected(nx.from_numpy_array(graph)):
                 np.fill_diagonal(graph, 0)
@@ -312,7 +311,6 @@ class ConnectedGraphSamplerWithSeed(Sampler):
 
 
 class ConnectedGraphSamplerWithRandomWeights(Sampler):
-    """Generates an E-R random connected graph of a specific size"""
 
     def _sample_data(self,
                      length: int,
@@ -321,7 +319,7 @@ class ConnectedGraphSamplerWithRandomWeights(Sampler):
                      ):
         for _ in range(tries):
             graph = self._random_cut_graph(
-                nb_nodes=length, p_high=0.9, p_low=0.9 * 2 / length
+                nb_nodes=length, p_high=0.9, p_low=0.1 / length
             )
             if nx.is_connected(nx.from_numpy_array(graph)):
                 np.fill_diagonal(graph, 0)
@@ -332,7 +330,6 @@ class ConnectedGraphSamplerWithRandomWeights(Sampler):
 
 
 class ConnectedGraphSamplerWithRandomNodeWeights(Sampler):
-    """Generates an E-R random connected graph of a specific size"""
 
     def _sample_data(self,
                      length: int,
@@ -341,7 +338,7 @@ class ConnectedGraphSamplerWithRandomNodeWeights(Sampler):
                      ):
         for _ in range(tries):
             graph = self._random_cut_graph(
-                nb_nodes=length, p_high=0.9, p_low=0.9 * 2 / length
+                nb_nodes=length, p_high=0.9, p_low=0.1 / length
             )
             if nx.is_connected(nx.from_numpy_array(graph)):
                 np.fill_diagonal(graph, 0)

@@ -11,6 +11,13 @@ _Out = Tuple[_Array, probing.ProbesDict]
 _OutputClass = specs.OutputClass
 
 
+def tent_map(x):
+    if 0 <= x <= 0.5:
+        return 2 * x
+    elif 0.5 < x <= 1:
+        return 2 - 2 * x
+
+
 def sample_indices_with_weights(A):
     if np.sum(A) == 0:
         breakpoint()
@@ -24,6 +31,25 @@ def sample_indices_with_weights(A):
     i, j = np.unravel_index(sampled_index, A.shape)
 
     return i, j
+
+
+def sample_indices_with_weights_array(A, w):
+    n = A.shape[0]
+
+    edge_weights = np.zeros((n, n))
+    for i in range(n):
+        for j in range(n):
+            edge_weights[i, j] = (w[i]+0.05) * (w[j]+0.05) * A[i, j]
+
+    total_prob = np.sum(edge_weights)
+    if total_prob == 0:
+        return -1, -1
+    edge_weights /= total_prob
+
+    i, j = np.unravel_index(np.argmax(edge_weights), edge_weights.shape)
+
+    return i, j
+
 
 
 def sample_lexicographically_smallest(A):
@@ -108,15 +134,22 @@ def karger(A: _Array, Seed: int) -> _Out:
             j = tmp
         group[group == j] = i
         replace_edges(graph_comp, i, j)
-
+    probing.push(
+        probes,
+        specs.Stage.HINT,
+        next_probe={
+            'group_h': np.copy(group),
+            'graph_comp': np.copy(graph_comp),
+        })
     probing.push(probes, specs.Stage.OUTPUT, next_probe={'group': np.copy(group)})
     probing.finalize(probes)
     return group, probes
 
 
-def karger_deterministic(A: _Array) -> _Out:
+def karger_with_node_weights(A: _Array, w: _Array) -> _Out:
     chex.assert_rank(A, 2)
-    probes = probing.initialize(specs.SPECS['karger_deterministic'])
+    chex.assert_rank(w, 1)
+    probes = probing.initialize(specs.SPECS['karger_with_node_weights'])
     A_pos = np.arange(A.shape[0])
     probing.push(
         probes,
@@ -125,7 +158,9 @@ def karger_deterministic(A: _Array) -> _Out:
             'pos': np.copy(A_pos) * 1.0 / A.shape[0],
             'A': np.copy(A),
             'adj': probing.graph(np.copy(A)),
+            'node_weights': np.copy(w)
         })
+
     group = np.arange(A.shape[0])
     graph_comp = np.copy(A)
     for s in range(A.shape[0] - 2):
@@ -135,9 +170,10 @@ def karger_deterministic(A: _Array) -> _Out:
             next_probe={
                 'group_h': np.copy(group),
                 'graph_comp': np.copy(graph_comp),
+                'node_weights_h': np.copy(w)
             })
 
-        i, j = sample_lexicographically_smallest(graph_comp)
+        i, j = sample_indices_with_weights_array(graph_comp, w)
         assert (i != j)
         assert (i != -1)
 
@@ -149,7 +185,17 @@ def karger_deterministic(A: _Array) -> _Out:
             j = tmp
         group[group == j] = i
         replace_edges(graph_comp, i, j)
+        for i in range(A.shape[0]):
+            w[i] = tent_map(w[i])
 
+    probing.push(
+        probes,
+        specs.Stage.HINT,
+        next_probe={
+            'group_h': np.copy(group),
+            'graph_comp': np.copy(graph_comp),
+            'node_weights_h': np.copy(w)
+        })
     probing.push(probes, specs.Stage.OUTPUT, next_probe={'group': np.copy(group)})
     probing.finalize(probes)
     return group, probes
@@ -492,16 +538,9 @@ def karger_prim(A: _Array, random_weights: _Array, s: int = 0) -> _Out:
 
 
 if __name__ == '__main__':
+    adj_matrix = np.array([[0, 1, 1, 0], [1, 0, 1, 1], [1, 0, 0, 0], [0, 1, 0, 0]])
+    weights = np.random.rand(adj_matrix.shape[0])
 
-    disjoint_union = np.zeros((9, 9))
-    for i in range(9):
-        for j in range(9):
-            if i != j and (i >= 5) == (j >= 5):
-                disjoint_union[i, j] = 1
+    print(adj_matrix, weights)
 
-    adj_matrix = disjoint_union
-    adj_matrix[2, 6] = adj_matrix[6, 2] = 1
-    rand_matrix = np.random.rand(9, 9)
-    weights = (rand_matrix + rand_matrix.T) / 2
-    print(np.multiply(adj_matrix, weights))
-    print(karger_prim(adj_matrix, weights))
+    print(karger_with_node_weights(adj_matrix, weights))

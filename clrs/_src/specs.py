@@ -66,7 +66,7 @@ Spec = Dict[str, Tuple[str, str, str]]
 
 CLRS_30_ALGS = [
     'karger',
-    'karger_deterministic',
+    'karger_with_node_weights',
     'karger_kruskal',
     'karger_kruskal_naive',
     'karger_prim',
@@ -127,13 +127,16 @@ SPECS = types.MappingProxyType({
         'group_h': (Stage.HINT, Location.NODE, Type.POINTER),
         'graph_comp': (Stage.HINT, Location.EDGE, Type.SCALAR),
     },
-    'karger_deterministic': {
+    'karger_with_node_weights': {
         'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
         'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),
+        'node_weights': (Stage.INPUT, Location.NODE, Type.SCALAR),
         'adj': (Stage.INPUT, Location.EDGE, Type.MASK),
         'group': (Stage.OUTPUT, Location.NODE, Type.POINTER),
         'group_h': (Stage.HINT, Location.NODE, Type.POINTER),
         'graph_comp': (Stage.HINT, Location.EDGE, Type.SCALAR),
+        'node_weights_h': (Stage.HINT, Location.NODE, Type.SCALAR),
+
     },
     'karger_kruskal_naive': {
         'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),

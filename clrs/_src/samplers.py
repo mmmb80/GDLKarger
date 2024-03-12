@@ -302,12 +302,12 @@ class ConnectedGraphSamplerWithSeed(Sampler):
                      ):
         for _ in range(tries):
             graph = self._random_cut_graph(
-                nb_nodes=length,
+                nb_nodes=length, p_high=0.9, p_low=0.9*2 / length
             )
             if nx.is_connected(nx.from_numpy_array(graph)):
                 np.fill_diagonal(graph, 0)
                 assert (graph[0, 0] == 0)
-                return [graph, self._rng.randint(1,10)]
+                return [graph, self._rng.randint(1, 10)]
         raise Exception("Tries exceeded, maybe adjust p higher?")
 
 
@@ -321,13 +321,13 @@ class ConnectedGraphSamplerWithRandomWeights(Sampler):
                      ):
         for _ in range(tries):
             graph = self._random_cut_graph(
-                nb_nodes=length,
+                nb_nodes=length, p_high=0.9, p_low=0.9 * 2 / length
             )
             if nx.is_connected(nx.from_numpy_array(graph)):
                 np.fill_diagonal(graph, 0)
                 assert (graph[0, 0] == 0)
                 rand_matrix = self._rng.rand(length, length)
-                return [graph, (rand_matrix + rand_matrix.T)/2]
+                return [graph, (rand_matrix + rand_matrix.T) / 2]
         raise Exception("Tries exceeded, maybe adjust p higher?")
 
 
@@ -341,7 +341,7 @@ class ConnectedGraphSampler(Sampler):
                      ):
         for _ in range(tries):
             graph = self._random_cut_graph(
-                nb_nodes=length,
+                nb_nodes=length, p_high=0.9, p_low=0.9 * 2 / length
             )
             if nx.is_connected(nx.from_numpy_array(graph)):
                 np.fill_diagonal(graph, 0)
@@ -957,3 +957,21 @@ def process_random_pos(sample_iterator, rng):
             yield feedback
 
     return _iterate()
+
+
+if __name__ == '__main__':
+    nb_nodes = 16
+    p_high = 0.95
+    p_low = 0.05
+    adjacency_matrix = np.zeros((nb_nodes, nb_nodes))
+    partition = np.random.choice([0, 1], size=nb_nodes)
+    for i in range(nb_nodes):
+        for j in range(i):
+            if partition[i] == partition[j]:
+                adjacency_matrix[i][j] = np.random.choice([0, 1], p=[1 - p_high, p_high])
+                adjacency_matrix[j][i] = adjacency_matrix[i][j]
+            else:
+                adjacency_matrix[i][j] = np.random.choice([0, 1], p=[1 - p_low, p_low])
+                adjacency_matrix[j][i] = adjacency_matrix[i][j]
+    print(adjacency_matrix)
+    print(partition)

@@ -29,7 +29,7 @@ from clrs._src.algorithms.geometry import graham_scan
 from clrs._src.algorithms.geometry import jarvis_march
 
 from clrs._src.algorithms.kargers import karger
-from clrs._src.algorithms.kargers import karger_deterministic
+from clrs._src.algorithms.kargers import karger_with_node_weights
 from clrs._src.algorithms.kargers import karger_kruskal_naive
 from clrs._src.algorithms.kargers import karger_prim
 from clrs._src.algorithms.kargers import karger_kruskal

@@ -307,7 +307,7 @@ class ConnectedGraphSamplerWithSeed(Sampler):
             if nx.is_connected(nx.from_numpy_array(graph)):
                 np.fill_diagonal(graph, 0)
                 assert (graph[0, 0] == 0)
-                return [graph, self._rng.randint(1, 10)]
+                return [graph, self._rng.randint(1, 100)]
         raise Exception("Tries exceeded, maybe adjust p higher?")
 
 
@@ -331,7 +331,7 @@ class ConnectedGraphSamplerWithRandomWeights(Sampler):
         raise Exception("Tries exceeded, maybe adjust p higher?")
 
 
-class ConnectedGraphSampler(Sampler):
+class ConnectedGraphSamplerWithRandomNodeWeights(Sampler):
     """Generates an E-R random connected graph of a specific size"""
 
     def _sample_data(self,
@@ -346,7 +346,7 @@ class ConnectedGraphSampler(Sampler):
             if nx.is_connected(nx.from_numpy_array(graph)):
                 np.fill_diagonal(graph, 0)
                 assert (graph[0, 0] == 0)
-                return [graph]
+                return [graph, self._rng.rand(length)]
         raise Exception("Tries exceeded, maybe adjust p higher?")
 
 
@@ -702,7 +702,7 @@ class ConvexHullSampler(Sampler):
 
 SAMPLERS = {
     'karger': ConnectedGraphSamplerWithSeed,
-    'karger_deterministic': ConnectedGraphSampler,
+    'karger_with_node_weights': ConnectedGraphSamplerWithRandomNodeWeights,
     'karger_kruskal': ConnectedGraphSamplerWithSeed,
     'karger_kruskal_naive': ConnectedGraphSamplerWithRandomWeights,
     'karger_prim': ConnectedGraphSamplerWithRandomWeights,

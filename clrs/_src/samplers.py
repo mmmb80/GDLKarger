@@ -703,6 +703,7 @@ SAMPLERS = {
     'karger_kruskal': ConnectedGraphSamplerWithSeed,
     'karger_kruskal_naive': ConnectedGraphSamplerWithRandomWeights,
     'karger_prim': ConnectedGraphSamplerWithRandomWeights,
+    'karger_with_no_hints': ConnectedGraphSamplerWithSeed,
     'insertion_sort': SortingSampler,
     'bubble_sort': SortingSampler,
     'heapsort': SortingSampler,

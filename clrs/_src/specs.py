@@ -70,6 +70,7 @@ CLRS_30_ALGS = [
     'karger_kruskal',
     'karger_kruskal_naive',
     'karger_prim',
+    'karger_with_no_hints',
     'articulation_points',
     'activity_selector',
     'bellman_ford',

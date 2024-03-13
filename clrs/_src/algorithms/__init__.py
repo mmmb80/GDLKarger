@@ -33,6 +33,7 @@ from clrs._src.algorithms.kargers import karger_with_node_weights
 from clrs._src.algorithms.kargers import karger_kruskal_naive
 from clrs._src.algorithms.kargers import karger_prim
 from clrs._src.algorithms.kargers import karger_kruskal
+from clrs._src.algorithms.kargers import karger_with_no_hints
 from clrs._src.algorithms.graphs import dfs
 from clrs._src.algorithms.graphs import bfs
 from clrs._src.algorithms.graphs import topological_sort

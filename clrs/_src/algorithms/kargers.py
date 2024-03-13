@@ -96,6 +96,48 @@ def replace_edges_max(adj_matrix, i, j):
     return adj_matrix
 
 
+def karger_with_no_hints(A : _Array, Seed: int) -> _Out:
+    chex.assert_rank(A, 2)
+    probes = probing.initialize(specs.SPECS['karger'])
+    A_pos = np.arange(A.shape[0])
+    probing.push(
+        probes,
+        specs.Stage.INPUT,
+        next_probe={
+            'pos': np.copy(A_pos) * 1.0 / A.shape[0],
+            'A': np.copy(A),
+            'adj': probing.graph(np.copy(A)),
+            'seed': Seed
+        })
+    random.seed(Seed)
+    np.random.seed(Seed)
+    group = np.arange(A.shape[0])
+    graph_comp = np.copy(A)
+    for s in range(A.shape[0] - 2):
+        i, j = sample_indices_with_weights(graph_comp)
+        assert (i != j)
+        assert (i != -1)
+
+        i = group[i]
+        j = group[j]
+        if A_pos[i] > A_pos[j]:
+            tmp = i
+            i = j
+            j = tmp
+        group[group == j] = i
+        replace_edges(graph_comp, i, j)
+    probing.push(
+        probes,
+        specs.Stage.HINT,
+        next_probe={
+            'group_h': np.copy(group),
+            'graph_comp': np.copy(graph_comp),
+        })
+    probing.push(probes, specs.Stage.OUTPUT, next_probe={'group': np.copy(group)})
+    probing.finalize(probes)
+    return group, probes
+
+
 def karger(A: _Array, Seed: int) -> _Out:
     chex.assert_rank(A, 2)
     probes = probing.initialize(specs.SPECS['karger'])

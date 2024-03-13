@@ -128,6 +128,15 @@ SPECS = types.MappingProxyType({
         'group_h': (Stage.HINT, Location.NODE, Type.POINTER),
         'graph_comp': (Stage.HINT, Location.EDGE, Type.SCALAR),
     },
+    'karger_with_no_hints': {
+        'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
+        'seed': (Stage.INPUT, Location.GRAPH, Type.SCALAR),
+        'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),
+        'adj': (Stage.INPUT, Location.EDGE, Type.MASK),
+        'group': (Stage.OUTPUT, Location.NODE, Type.POINTER),
+        'group_h': (Stage.HINT, Location.NODE, Type.POINTER),
+        'graph_comp': (Stage.HINT, Location.EDGE, Type.SCALAR),
+    },
     'karger_with_node_weights': {
         'pos': (Stage.INPUT, Location.NODE, Type.SCALAR),
         'A': (Stage.INPUT, Location.EDGE, Type.SCALAR),

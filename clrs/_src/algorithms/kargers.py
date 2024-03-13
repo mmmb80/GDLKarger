@@ -98,7 +98,7 @@ def replace_edges_max(adj_matrix, i, j):
 
 def karger_with_no_hints(A : _Array, Seed: int) -> _Out:
     chex.assert_rank(A, 2)
-    probes = probing.initialize(specs.SPECS['karger'])
+    probes = probing.initialize(specs.SPECS['karger_with_no_hints'])
     A_pos = np.arange(A.shape[0])
     probing.push(
         probes,
